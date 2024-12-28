@@ -19,7 +19,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 # 常量定义
-FILENAME = "https_proxies.txt"
+FILENAME = "/tmp/https_proxies.txt"
 
 def generate_proxies():
     """获取待检查的代理列表"""

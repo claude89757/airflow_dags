@@ -24,7 +24,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 # 常量定义
-FILENAME = "isz_https_proxies.txt"
+FILENAME = "/tmp/isz_https_proxies.txt"
 
 def generate_proxies():
     """
