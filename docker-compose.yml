@@ -50,6 +50,14 @@ services:
 
       # 禁止加载官方示例 DAG
       - AIRFLOW_LOAD_EXAMPLES=no
+
+      # 添加时区配置
+      - TZ=Asia/Shanghai
+      - AIRFLOW__CORE__DEFAULT_TIMEZONE=Asia/Shanghai
+
+      # 添加前端显示配置
+      - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True  # 在Web UI中显示配置
+
     volumes:
       - /root/airflow_dags:/opt/bitnami/airflow/dags
       - /root/airflow_logs:/opt/bitnami/airflow/logs
@@ -77,6 +85,11 @@ services:
       - AIRFLOW__CELERY__WORKER_CONCURRENCY=4
 
       - AIRFLOW_LOAD_EXAMPLES=no
+
+      # 添加时区配置
+      - TZ=Asia/Shanghai
+      - AIRFLOW__CORE__DEFAULT_TIMEZONE=Asia/Shanghai
+
     volumes:
       - /root/airflow_dags:/opt/bitnami/airflow/dags
       - /root/airflow_logs:/opt/bitnami/airflow/logs
@@ -110,6 +123,13 @@ services:
       - AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG=3
 
       - AIRFLOW_LOAD_EXAMPLES=no
+
+      # 添加时区配置
+      - TZ=Asia/Shanghai
+      - AIRFLOW__CORE__DEFAULT_TIMEZONE=Asia/Shanghai
+
+      # 添加前端显示配置
+      - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True  # 在Web UI中显示配置
 
     # Airflow Web UI 端口
     ports:
