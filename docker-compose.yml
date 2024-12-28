@@ -33,7 +33,6 @@ services:
   airflow-scheduler:
     image: bitnami/airflow:latest
     container_name: airflow_scheduler
-    user: root
     environment:
       - AIRFLOW_COMPONENT_TYPE=scheduler
       - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
@@ -68,7 +67,6 @@ services:
   airflow-worker:
     image: bitnami/airflow:latest
     container_name: airflow_worker
-    user: root
     environment:
       - AIRFLOW_COMPONENT_TYPE=worker
       - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
@@ -100,7 +98,6 @@ services:
   airflow:
     image: bitnami/airflow:latest
     container_name: airflow_web
-    user: root
     environment:
       - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
       - AIRFLOW_SECRET_KEY=a25mQ1FHTUh3MnFRSk5KMEIyVVU2YmN0VGRyYTVXY08=
