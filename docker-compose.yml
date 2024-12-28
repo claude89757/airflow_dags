@@ -1,0 +1,120 @@
+version: '2'
+
+services:
+  # -------------------------
+  # 1) PostgreSQL 数据库
+  # -------------------------
+  postgresql:
+    image: 'bitnami/postgresql:latest'
+    container_name: airflow_postgres
+    user: root
+    environment:
+      - POSTGRESQL_DATABASE=${AIRFLOW_DATABASE_NAME}
+      - POSTGRESQL_USERNAME=${AIRFLOW_DATABASE_USERNAME}
+      - POSTGRESQL_PASSWORD=${AIRFLOW_DATABASE_PASSWORD}
+    volumes:
+      - /root/airflow_postgresql:/bitnami/postgresql
+
+  # -------------------------
+  # 2) Redis 缓存/消息队列
+  # -------------------------
+  redis:
+    image: 'bitnami/redis:latest'
+    container_name: airflow_redis
+    user: root
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+      - /root/airflow_redis:/bitnami
+
+  # -------------------------
+  # 3) Airflow Scheduler
+  # -------------------------
+  airflow-scheduler:
+    image: bitnami/airflow:latest
+    container_name: airflow_scheduler
+    user: root
+    environment:
+      - AIRFLOW_COMPONENT_TYPE=scheduler
+      - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+      - AIRFLOW_SECRET_KEY=a25mQ1FHTUh3MnFRSk5KMEIyVVU2YmN0VGRyYTVXY08=
+      - AIRFLOW_EXECUTOR=CeleryExecutor
+      - AIRFLOW_DATABASE_NAME=${AIRFLOW_DATABASE_NAME}
+      - AIRFLOW_DATABASE_USERNAME=${AIRFLOW_DATABASE_USERNAME}
+      - AIRFLOW_DATABASE_PASSWORD=${AIRFLOW_DATABASE_PASSWORD}
+
+      # 并发限制配置
+      - AIRFLOW__CORE__PARALLELISM=8
+      - AIRFLOW__CORE__DAG_CONCURRENCY=4
+      - AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG=3
+
+      # 禁止加载官方示例 DAG
+      - AIRFLOW_LOAD_EXAMPLES=no
+    volumes:
+      - /root/airflow_dags:/opt/bitnami/airflow/dags
+      - /root/airflow_logs:/opt/bitnami/airflow/logs
+
+  # -------------------------
+  # 4) Airflow Celery Worker
+  # -------------------------
+  airflow-worker:
+    image: bitnami/airflow:latest
+    container_name: airflow_worker
+    user: root
+    environment:
+      - AIRFLOW_COMPONENT_TYPE=worker
+      - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+      - AIRFLOW_SECRET_KEY=a25mQ1FHTUh3MnFRSk5KMEIyVVU2YmN0VGRyYTVXY08=
+      - AIRFLOW_EXECUTOR=CeleryExecutor
+      - AIRFLOW_DATABASE_NAME=${AIRFLOW_DATABASE_NAME}
+      - AIRFLOW_DATABASE_USERNAME=${AIRFLOW_DATABASE_USERNAME}
+      - AIRFLOW_DATABASE_PASSWORD=${AIRFLOW_DATABASE_PASSWORD}
+
+      # 并发限制：Worker级并发
+      - AIRFLOW__CORE__PARALLELISM=8
+      - AIRFLOW__CORE__DAG_CONCURRENCY=4
+      - AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG=3
+      - AIRFLOW__CELERY__WORKER_CONCURRENCY=4
+
+      - AIRFLOW_LOAD_EXAMPLES=no
+    volumes:
+      - /root/airflow_dags:/opt/bitnami/airflow/dags
+      - /root/airflow_logs:/opt/bitnami/airflow/logs
+
+  # -------------------------
+  # 5) Airflow Webserver
+  # -------------------------
+  airflow:
+    image: bitnami/airflow:latest
+    container_name: airflow_web
+    user: root
+    environment:
+      - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+      - AIRFLOW_SECRET_KEY=a25mQ1FHTUh3MnFRSk5KMEIyVVU2YmN0VGRyYTVXY08=
+      - AIRFLOW_EXECUTOR=CeleryExecutor
+      - AIRFLOW_DATABASE_NAME=${AIRFLOW_DATABASE_NAME}
+      - AIRFLOW_DATABASE_USERNAME=${AIRFLOW_DATABASE_USERNAME}
+      - AIRFLOW_DATABASE_PASSWORD=${AIRFLOW_DATABASE_PASSWORD}
+      - AIRFLOW_USERNAME=${AIRFLOW_USERNAME}
+      - AIRFLOW_PASSWORD=${AIRFLOW_PASSWORD}
+      - AIRFLOW_EMAIL=${AIRFLOW_EMAIL}
+
+      # Webserver 并发限制：Gunicorn Worker 数
+      - AIRFLOW__WEBSERVER__WORKERS=2
+      # Worker 超时时间
+      - AIRFLOW__WEBSERVER__WEB_SERVER_WORKER_TIMEOUT=120
+
+      # 全局并发控制，可与 scheduler/worker 同步
+      - AIRFLOW__CORE__PARALLELISM=8
+      - AIRFLOW__CORE__DAG_CONCURRENCY=4
+      - AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG=3
+
+      - AIRFLOW_LOAD_EXAMPLES=no
+
+    # Airflow Web UI 端口
+    ports:
+      - '80:8080'
+
+    volumes:
+      - /root/airflow_dags:/opt/bitnami/airflow/dags
+      - /root/airflow_logs:/opt/bitnami/airflow/logs
