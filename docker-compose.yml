@@ -57,6 +57,8 @@ services:
       # 添加前端显示配置
       - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True  # 在Web UI中显示配置
 
+      - AIRFLOW__CELERY__BROKER_CONNECTION_RETRY_ON_STARTUP=True
+
     volumes:
       - /root/airflow_dags:/opt/bitnami/airflow/dags
       - /root/airflow_logs:/opt/bitnami/airflow/logs
@@ -87,6 +89,8 @@ services:
       # 添加时区配置
       - TZ=Asia/Shanghai
       - AIRFLOW__CORE__DEFAULT_TIMEZONE=Asia/Shanghai
+
+      - AIRFLOW__CELERY__BROKER_CONNECTION_RETRY_ON_STARTUP=True
 
     volumes:
       - /root/airflow_dags:/opt/bitnami/airflow/dags
@@ -127,6 +131,8 @@ services:
 
       # 添加前端显示配置
       - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True  # 在Web UI中显示配置
+
+      - AIRFLOW__CELERY__BROKER_CONNECTION_RETRY_ON_STARTUP=True
 
     # Airflow Web UI 端口
     ports:
