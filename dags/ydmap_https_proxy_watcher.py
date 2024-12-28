@@ -233,6 +233,8 @@ dag = DAG(
     description='A DAG to check and update HTTPS proxies',
     schedule_interval='*/30 * * * *',
     start_date=datetime(2024, 1, 1),
+    max_active_runs=1,
+    dagrun_timeout=timedelta(minutes=30),
     catchup=False,
     tags=['proxy', 'ydmap'],
 )
