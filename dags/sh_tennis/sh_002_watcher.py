@@ -78,6 +78,7 @@ def load_data_from_variable(filename: str, expire_time: int, using_cached: bool 
     """
     从 Airflow Variable 读取数据，若不存在或超时，则重新拉取
     """
+    print(f"load_data_from_variable: {filename}")
     try:
         # 从 Variable 获取数据和时间戳
         var_data = Variable.get(filename, deserialize_json=True)
