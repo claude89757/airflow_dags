@@ -34,10 +34,14 @@ services:
     image: bitnami/airflow:latest
     container_name: airflow_scheduler
     environment:
+      # 基础配置
       - AIRFLOW_COMPONENT_TYPE=scheduler
+      - AIRFLOW_EXECUTOR=CeleryExecutor
       - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
       - AIRFLOW_SECRET_KEY=a25mQ1FHTUh3MnFRSk5KMEIyVVU2YmN0VGRyYTVXY08=
-      - AIRFLOW_EXECUTOR=CeleryExecutor
+      - AIRFLOW_LOAD_EXAMPLES=no
+
+      # 数据库配置
       - AIRFLOW_DATABASE_NAME=${AIRFLOW_DATABASE_NAME}
       - AIRFLOW_DATABASE_USERNAME=${AIRFLOW_DATABASE_USERNAME}
       - AIRFLOW_DATABASE_PASSWORD=${AIRFLOW_DATABASE_PASSWORD}
@@ -47,16 +51,14 @@ services:
       - AIRFLOW__CORE__DAG_CONCURRENCY=4
       - AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG=3
 
-      # 禁止加载官方示例 DAG
-      - AIRFLOW_LOAD_EXAMPLES=no
-
-      # 添加时区配置
+      # 时区配置
       - TZ=Asia/Shanghai
       - AIRFLOW__CORE__DEFAULT_TIMEZONE=Asia/Shanghai
 
-      # 添加前端显示配置
+      # Web UI配置
       - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True  # 在Web UI中显示配置
 
+      # Celery配置
       - AIRFLOW__CELERY__BROKER_CONNECTION_RETRY_ON_STARTUP=True
 
     volumes:
@@ -70,26 +72,29 @@ services:
     image: bitnami/airflow:latest
     container_name: airflow_worker
     environment:
+      # 基础配置
       - AIRFLOW_COMPONENT_TYPE=worker
       - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
       - AIRFLOW_SECRET_KEY=a25mQ1FHTUh3MnFRSk5KMEIyVVU2YmN0VGRyYTVXY08=
       - AIRFLOW_EXECUTOR=CeleryExecutor
+      - AIRFLOW_LOAD_EXAMPLES=no
+
+      # 数据库配置
       - AIRFLOW_DATABASE_NAME=${AIRFLOW_DATABASE_NAME}
       - AIRFLOW_DATABASE_USERNAME=${AIRFLOW_DATABASE_USERNAME}
       - AIRFLOW_DATABASE_PASSWORD=${AIRFLOW_DATABASE_PASSWORD}
 
-      # 并发限制：Worker级并发
+      # 并发限制配置
       - AIRFLOW__CORE__PARALLELISM=8
       - AIRFLOW__CORE__DAG_CONCURRENCY=4
       - AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG=3
       - AIRFLOW__CELERY__WORKER_CONCURRENCY=4
 
-      - AIRFLOW_LOAD_EXAMPLES=no
-
-      # 添加时区配置
+      # 时区配置
       - TZ=Asia/Shanghai
       - AIRFLOW__CORE__DEFAULT_TIMEZONE=Asia/Shanghai
 
+      # Celery配置
       - AIRFLOW__CELERY__BROKER_CONNECTION_RETRY_ON_STARTUP=True
 
     volumes:
@@ -103,35 +108,37 @@ services:
     image: bitnami/airflow:latest
     container_name: airflow_web
     environment:
+      # 基础配置
       - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
       - AIRFLOW_SECRET_KEY=a25mQ1FHTUh3MnFRSk5KMEIyVVU2YmN0VGRyYTVXY08=
       - AIRFLOW_EXECUTOR=CeleryExecutor
+      - AIRFLOW_LOAD_EXAMPLES=no
+
+      # 数据库配置
       - AIRFLOW_DATABASE_NAME=${AIRFLOW_DATABASE_NAME}
       - AIRFLOW_DATABASE_USERNAME=${AIRFLOW_DATABASE_USERNAME}
       - AIRFLOW_DATABASE_PASSWORD=${AIRFLOW_DATABASE_PASSWORD}
+
+      # 用户认证配置
       - AIRFLOW_USERNAME=${AIRFLOW_USERNAME}
       - AIRFLOW_PASSWORD=${AIRFLOW_PASSWORD}
       - AIRFLOW_EMAIL=${AIRFLOW_EMAIL}
 
-      # Webserver 并发限制：Gunicorn Worker 数
+      # Webserver配置
       - AIRFLOW__WEBSERVER__WORKERS=2
-      # Worker 超时时间
       - AIRFLOW__WEBSERVER__WEB_SERVER_WORKER_TIMEOUT=120
+      - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True  # 在Web UI中显示配置
 
-      # 全局并发控制，可与 scheduler/worker 同步
+      # 全局并发控制
       - AIRFLOW__CORE__PARALLELISM=8
       - AIRFLOW__CORE__DAG_CONCURRENCY=4
       - AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG=3
 
-      - AIRFLOW_LOAD_EXAMPLES=no
-
-      # 添加时区配置
+      # 时区配置
       - TZ=Asia/Shanghai
       - AIRFLOW__CORE__DEFAULT_TIMEZONE=Asia/Shanghai
 
-      # 添加前端显示配置
-      - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True  # 在Web UI中显示配置
-
+      # Celery配置
       - AIRFLOW__CELERY__BROKER_CONNECTION_RETRY_ON_STARTUP=True
 
     # Airflow Web UI 端口
