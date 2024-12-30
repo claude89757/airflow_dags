@@ -97,7 +97,7 @@ class ProxyCheckerConfig:
 async def check_proxy_async(proxy_url, proxy_url_infos, session, config):
     """异步检查代理是否可用"""
     try:
-        print(f"正在检查 {proxy_url}")
+        # print(f"正在检查 {proxy_url}")
         target_url = 'https://wxsports.ydmap.cn/srv200/api/pub/basic/getConfig'
         
         async with session.get(
@@ -115,7 +115,8 @@ async def check_proxy_async(proxy_url, proxy_url_infos, session, config):
                 return proxy_url
                 
     except Exception as error:
-        print(f"代理 {proxy_url} 检查失败: {str(error)}")
+        # print(f"代理 {proxy_url} 检查失败: {str(error)}")
+        pass
     
     return None
 
