@@ -931,7 +931,7 @@ def check_tennis_courts():
 
 # 创建DAG
 dag = DAG(
-    dag_id='sh_tennis_watcher',
+    dag_id='上海青少体育网球场巡检',
     default_args=default_args,
     description='监控网球场地可用情况',
     schedule_interval='*/10 * * * *',  # 每3分钟执行一次
