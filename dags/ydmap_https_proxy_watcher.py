@@ -219,7 +219,7 @@ def get_file_sha(url, headers):
 
 # DAG的默认参数
 default_args = {
-    'owner': 'airflow',
+    'owner': 'claude89757',
     'depends_on_past': False,
     'email_on_failure': False,
     'email_on_retry': False,
@@ -230,7 +230,7 @@ default_args = {
 
 # 定义DAG
 dag = DAG(
-    'ydmap_https_proxy_watcher',
+    dag_id='ydmap_https_proxy_watcher',
     default_args=default_args,
     description='A DAG to check and update HTTPS proxies',
     schedule_interval='*/30 * * * *',

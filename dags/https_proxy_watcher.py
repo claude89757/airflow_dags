@@ -145,7 +145,7 @@ def task_check_proxies():
 
 # DAG配置
 default_args = {
-    'owner': 'airflow',
+    'owner': 'claude89757',
     'depends_on_past': False,
     'email_on_failure': False,
     'email_on_retry': False,
@@ -156,7 +156,7 @@ default_args = {
 
 # 定义DAG
 dag = DAG(
-    'https_proxy_watcher',
+    dag_id='https_proxy_watcher',
     default_args=default_args,
     description='A DAG to check and update HTTPS proxies (Sync version)',
     schedule_interval='*/30 * * * *',

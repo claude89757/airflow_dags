@@ -31,7 +31,7 @@ warnings.filterwarnings("ignore", message="Unverified HTTPS request")
 
 # DAG的默认参数
 default_args = {
-    'owner': 'airflow',
+    'owner': 'claude89757',
     'depends_on_past': False,
     'start_date': datetime.datetime(2024, 1, 1),
     'email_on_failure': False,
