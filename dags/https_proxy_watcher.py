@@ -20,7 +20,8 @@ from airflow.operators.python import PythonOperator
 from airflow.models.variable import Variable
 
 # 常量定义
-FILENAME = "/tmp/https_proxies.txt"
+LOCAL_FILENAME = "/tmp/https_proxies.txt"
+REMOTE_FILENAME = "https://api.github.com/repos/claude89757/free_https_proxies/contents/free_https_proxies.txt"
 
 def generate_proxies():
     """获取待检查的代理列表"""
@@ -87,21 +88,18 @@ def update_proxy_file(filename, available_proxies):
 
 def upload_file_to_github(filename):
     token = Variable.get('GIT_TOKEN')
-    repo = 'claude89757/free_https_proxies'
-    url = f'https://api.github.com/repos/{repo}/contents/{FILENAME}'
-
     headers = {
         'Authorization': f'token {token}',
         'Accept': 'application/vnd.github.v3+json'
     }
-    with open(FILENAME, 'rb') as file:
+    with open(LOCAL_FILENAME, 'rb') as file:
         content = file.read()
     data = {
         'message': f'Update proxy list by scf',
         'content': base64.b64encode(content).decode('utf-8'),
-        'sha': get_file_sha(url, headers)
+        'sha': get_file_sha(REMOTE_FILENAME, headers)
     }
-    response = requests.put(url, headers=headers, json=data)
+    response = requests.put(REMOTE_FILENAME, headers=headers, json=data)
     if response.status_code == 200:
         print("File uploaded successfully.")
     else:
@@ -109,13 +107,12 @@ def upload_file_to_github(filename):
 
 def download_file():
     try:
-        url = 'https://raw.githubusercontent.com/claude89757/free_https_proxies/main/free_https_proxies.txt'
-        response = requests.get(url)
+        response = requests.get(REMOTE_FILENAME)
         response.raise_for_status()
 
-        with open(FILENAME, 'wb') as file:
+        with open(LOCAL_FILENAME, 'wb') as file:
             file.write(response.content)
-        print(f"File downloaded and saved to {FILENAME}")
+        print(f"File downloaded and saved to {LOCAL_FILENAME}")
     except requests.RequestException as e:
         print(f"Failed to download the file: {e}")
 
@@ -138,8 +135,8 @@ def task_check_proxies():
             now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             print(f"{now} Available proxies: {len(available_proxies)}")
             
-            update_proxy_file(FILENAME, available_proxies)
-            upload_file_to_github(FILENAME)
+            update_proxy_file(LOCAL_FILENAME, available_proxies)
+            upload_file_to_github(LOCAL_FILENAME)
             
             if len(available_proxies) >= 10:
                 break
