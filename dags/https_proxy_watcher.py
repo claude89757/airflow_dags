@@ -95,7 +95,7 @@ def upload_file_to_github(filename):
     with open(LOCAL_FILENAME, 'rb') as file:
         content = file.read()
     data = {
-        'message': f'Update proxy list by scf',
+        'message': f'Update proxy list by airflow',
         'content': base64.b64encode(content).decode('utf-8'),
         'sha': get_file_sha(REMOTE_FILENAME, headers)
     }
