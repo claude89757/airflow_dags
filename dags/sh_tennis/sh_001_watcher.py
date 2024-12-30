@@ -223,15 +223,24 @@ def check_tennis_courts():
             weekday = ["一", "二", "三", "四", "五", "六", "日"][date_obj.weekday()]
             
             for free_slot in free_slot_list:
-                # 生成通知字符串，格式：【场地名】星期几(月-日)空场: HH:MM-HH:MM
+                # 生成通知字符串
                 notification = f"【{court_name}】星期{weekday}({date})空场: {free_slot[0]}-{free_slot[1]}"
                 
-                # 如果不存在，则添加到列表中
+                # 如果不存在，则添加到列表开头
                 if notification not in notifications:
-                    notifications.append(notification)
+                    notifications.insert(0, notification)
 
+        # 只保留最新的10条消息
+        notifications = notifications[:10]
+        
         # 更新Variable
-        Variable.set(cache_key, notifications, serialize_json=True)
+        description = f"上海卢湾网球场场地通知 - 最后更新: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        Variable.set(
+            key=cache_key,
+            value=notifications,
+            description=description,
+            serialize_json=True
+        )
 
     run_end_time = time.time()
     execution_time = run_end_time - run_start_time
