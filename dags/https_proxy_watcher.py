@@ -17,6 +17,7 @@ from datetime import datetime, timedelta
 import requests
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.models.variable import Variable
 
 # 常量定义
 FILENAME = "/tmp/https_proxies.txt"
@@ -85,7 +86,7 @@ def update_proxy_file(filename, available_proxies):
             file.writelines(lines[-50:])
 
 def upload_file_to_github(filename):
-    token = os.environ['GIT_TOKEN']
+    token = Variable.get('GIT_TOKEN')
     repo = 'claude89757/free_https_proxies'
     url = f'https://api.github.com/repos/{repo}/contents/{FILENAME}'
 
