@@ -22,6 +22,7 @@ import requests
 import aiohttp
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.models.variable import Variable
 
 # 常量定义
 FILENAME = "/tmp/isz_https_proxies.txt"
@@ -176,7 +177,7 @@ async def task_check_proxies_async():
     print("检查完成")
 
 def upload_file_to_github(filename):
-    token = os.environ['GIT_TOKEN']
+    token = Variable.get('GIT_TOKEN')
     repo = 'claude89757/free_https_proxies'
     url = f'https://api.github.com/repos/{repo}/contents/{FILENAME}'
 
