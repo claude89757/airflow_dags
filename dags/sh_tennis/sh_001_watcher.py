@@ -203,7 +203,7 @@ def check_tennis_courts():
                         })
                         break
 
-    # 使用Airflow Variable存储待通知信息
+    # 处理通知逻辑
     if up_for_send_data_list:
         # 获取现有的通知缓存
         cache_key = "上海卢湾网球场"
@@ -218,9 +218,13 @@ def check_tennis_courts():
             court_name = data['court_name']
             free_slot_list = data['free_slot_list']
             
+            # 获取星期几
+            date_obj = datetime.datetime.strptime(f"2024-{date}", "%Y-%m-%d")
+            weekday = ["一", "二", "三", "四", "五", "六", "日"][date_obj.weekday()]
+            
             for free_slot in free_slot_list:
-                # 生成简单的通知字符串，格式: "日期_场地_开始时间-结束时间"
-                notification = f"{date}_{court_name}_{free_slot[0]}-{free_slot[1]}"
+                # 生成通知字符串，格式：【场地名】星期几(月-日)空场: HH:MM-HH:MM
+                notification = f"【{court_name}】星期{weekday}({date})空场: {free_slot[0]}-{free_slot[1]}"
                 
                 # 如果不存在，则添加到列表中
                 if notification not in notifications:
