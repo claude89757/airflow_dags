@@ -141,6 +141,24 @@ services:
       # Celery配置
       - AIRFLOW__CELERY__BROKER_CONNECTION_RETRY_ON_STARTUP=True
 
+      # API认证配置 - 使用basic auth
+      - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.basic_auth
+      
+      # 跨域访问配置
+      - AIRFLOW__API__ACCESS_CONTROL_ALLOW_HEADERS=*
+      - AIRFLOW__API__ACCESS_CONTROL_ALLOW_METHODS=*
+      - AIRFLOW__API__ACCESS_CONTROL_ALLOW_ORIGINS=*
+
+      # REST API 速率限制配置
+      - AIRFLOW__API__RATE_LIMIT=True
+      - AIRFLOW__API__RATE_LIMIT_RETRIES=300
+      - AIRFLOW__API__RATE_LIMIT_RETRY_TIMEOUT=300
+      
+      # API性能配置
+      - AIRFLOW__API__RESPONSE_CACHE_ENABLED=True  # 启用响应缓存
+      - AIRFLOW__API__RESPONSE_CACHE_TIMEOUT=300  # 缓存超时时间(秒)
+      - AIRFLOW__API__RESPONSE_CACHE_MAX_ENTRIES=5000  # 最大缓存条目数
+
     # Airflow Web UI 端口
     ports:
       - '80:8080'

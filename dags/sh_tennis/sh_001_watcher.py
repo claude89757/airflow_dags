@@ -206,52 +206,25 @@ def check_tennis_courts():
     # 使用Airflow Variable存储待通知信息
     if up_for_send_data_list:
         # 获取现有的通知缓存
-        cache_key = "tennis_court_notifications"
+        cache_key = "上海卢湾网球场"
         try:
             notifications = Variable.get(cache_key, deserialize_json=True)
         except:
-            notifications = {
-                "metadata": {
-                    "last_updated": "",
-                    "total_count": 0
-                },
-                "notifications": {
-                    "pending": {},  # 待处理的通知
-                    "processed": {}  # 已处理的通知
-                }
-            }
+            notifications = []
         
+        # 添加新的通知
         for data in up_for_send_data_list:
             date = data['date']
             court_name = data['court_name']
             free_slot_list = data['free_slot_list']
             
             for free_slot in free_slot_list:
-                notification_id = f"{court_name}_{date}_{free_slot[0]}_{free_slot[1]}"
+                # 生成简单的通知字符串，格式: "日期_场地_开始时间-结束时间"
+                notification = f"{date}_{court_name}_{free_slot[0]}-{free_slot[1]}"
                 
-                # 检查是否已存在于pending或processed中
-                if (notification_id not in notifications["notifications"]["pending"] and 
-                    notification_id not in notifications["notifications"]["processed"]):
-                    
-                    notification_data = {
-                        "id": notification_id,
-                        "date": date,
-                        "court_name": court_name,
-                        "start_time": free_slot[0],
-                        "end_time": free_slot[1],
-                        "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "status": "pending",
-                        "processed_at": None,
-                        "processed_by": None
-                    }
-                    
-                    notifications["notifications"]["pending"][notification_id] = notification_data
-
-        # 更新元数据
-        notifications["metadata"] = {
-            "last_updated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "total_count": len(notifications["notifications"]["pending"]) + len(notifications["notifications"]["processed"])
-        }
+                # 如果不存在，则添加到列表中
+                if notification not in notifications:
+                    notifications.append(notification)
 
         # 更新Variable
         Variable.set(cache_key, notifications, serialize_json=True)
