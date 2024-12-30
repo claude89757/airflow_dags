@@ -266,6 +266,8 @@ dag = DAG(
     default_args=default_args,
     description='监控网球场地可用情况',
     schedule_interval='*/2 * * * *',  # 每2分钟执行一次
+    max_active_runs=1,
+    dagrun_timeout=timedelta(minutes=3),
     catchup=False
 )
 
