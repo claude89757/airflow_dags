@@ -916,7 +916,7 @@ def check_tennis_courts():
             free_slot_list = data['free_slot_list']
             
             # 获取星期几
-            date_obj = datetime.datetime.strptime(f"2024-{date}", "%Y-%m-%d")
+            date_obj = datetime.datetime.strptime(f"{datetime.datetime.now().year}-{date}", "%Y-%m-%d")
             weekday = date_obj.weekday()
             weekday_str = ["一", "二", "三", "四", "五", "六", "日"][weekday]
             
