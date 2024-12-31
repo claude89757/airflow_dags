@@ -36,20 +36,22 @@ def generate_proxies():
         "https://raw.githubusercontent.com/ErcinDedeoglu/proxies/main/proxies/https.txt",
     ]
     proxies = []
-
     proxy_url_infos = {}
+    
+    print("开始获取代理列表...")
     for url in urls:
-        print(f"getting proxy list for {url}")
-        response = requests.get(url)
-        text = response.text.strip()
-        lines = text.split("\n")
-        # 过滤掉非 IP 格式的行
-        lines = [line.strip() for line in lines if is_valid_proxy(line)]
-        proxies.extend(lines)
-        print(f"Loaded {len(lines)} proxies from {url}")
-        for line in lines:
-            proxy_url_infos[line] = url
-    print(f"Total {len(proxies)} proxies loaded")
+        try:
+            response = requests.get(url)
+            text = response.text.strip()
+            lines = text.split("\n")
+            lines = [line.strip() for line in lines if is_valid_proxy(line)]
+            proxies.extend(lines)
+            for line in lines:
+                proxy_url_infos[line] = url
+        except Exception as e:
+            print(f"从 {url} 获取代理失败: {str(e)}")
+            
+    print(f"总计获取到 {len(proxies)} 个待检查代理")
     random.shuffle(proxies)
     return proxies, proxy_url_infos
 
@@ -66,8 +68,6 @@ def check_proxy(proxy_url, proxy_url_infos):
     使用 requests 检查代理是否可用
     """
     try:
-        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        print(f"{now} Checking {proxy_url}")
         target_url = 'https://wxsports.ydmap.cn/srv200/api/pub/basic/getConfig'
         
         proxies = {
@@ -79,18 +79,18 @@ def check_proxy(proxy_url, proxy_url_infos):
             target_url,
             proxies=proxies,
             timeout=3,
-            verify=False  # 忽略 SSL 验证
+            verify=False
         )
         
         response_text = response.text
         
         if response.status_code == 200 and ("html" in response_text or 
             ('"code":-1' in response_text and "签名错误" in response_text)):
-            print(f"{now} [OK] {proxy_url} from {proxy_url_infos.get(proxy_url)}")
+            now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            print(f"[{now}] 发现可用代理: {proxy_url}")
             return proxy_url
             
-    except Exception as error:
-        # print(str(error))
+    except Exception:
         pass
     return None
 
@@ -124,22 +124,23 @@ def task_check_proxies():
     """
     主要检查代理的任务函数
     """
+    print("开始代理检查任务...")
     download_file()
     
     proxies, proxy_url_infos = generate_proxies()
-    print(f"start checking {len(proxies)} proxies")
+    print(f"开始检查 {len(proxies)} 个代理...")
     
     available_proxies = []
     for proxy in proxies:
         if check_proxy(proxy, proxy_url_infos):
             available_proxies.append(proxy)
             now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            print(f"{now} Available proxies: {len(available_proxies)}")
+            print(f"[{now}] 当前可用代理数量: {len(available_proxies)}")
             
             update_proxy_file(FILENAME, available_proxies)
             upload_file_to_github(FILENAME)
     
-    print("check end.")
+    print(f"检查完成，共发现 {len(available_proxies)} 个可用代理")
 
 def upload_file_to_github(filename):
     token = Variable.get('GIT_TOKEN')
