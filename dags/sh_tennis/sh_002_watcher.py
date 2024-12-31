@@ -917,11 +917,12 @@ def check_tennis_courts():
             
             # 获取星期几
             date_obj = datetime.datetime.strptime(f"2024-{date}", "%Y-%m-%d")
-            weekday = ["一", "二", "三", "四", "五", "六", "日"][date_obj.weekday()]
+            weekday = date_obj.weekday()
+            weekday_str = ["一", "二", "三", "四", "五", "六", "日"][weekday]
             
             for free_slot in free_slot_list:
                 # 生成通知字符串
-                notification = f"【{court_name}】星期{weekday}({date})空场: {free_slot[0]}-{free_slot[1]}"
+                notification = f"【{court_name}】星期{weekday_str}({date})空场: {free_slot[0]}-{free_slot[1]}"
                 
                 # 如果不存在，则添加到列表开头
                 if notification not in notifications:
