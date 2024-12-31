@@ -169,7 +169,7 @@ default_args = {
 
 # 定义DAG
 dag = DAG(
-    dag_id='https_proxy_watcher',
+    dag_id='HTTPS可用代理巡检',
     default_args=default_args,
     description='A DAG to check and update HTTPS proxies (Sync version)',
     schedule_interval='*/30 * * * *',

@@ -9,19 +9,15 @@
 
 # 标准库导入
 import os
-import sys
-import time
 import random
 import base64
 from datetime import datetime, timedelta
-from concurrent.futures import ThreadPoolExecutor
 import subprocess
 
 # 第三方库导入
 import requests
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.models.variable import Variable
 
 # 常量定义
 FILENAME = "/tmp/isz_https_proxies.txt"
@@ -193,7 +189,7 @@ default_args = {
 
 # 定义DAG
 dag = DAG(
-    dag_id='ydmap_https_proxy_watcher',
+    dag_id='运动地图的可用代理巡检',
     default_args=default_args,
     description='A DAG to check and update HTTPS proxies',
     schedule_interval='*/30 * * * *',
