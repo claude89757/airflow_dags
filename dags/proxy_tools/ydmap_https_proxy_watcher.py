@@ -45,7 +45,8 @@ def generate_proxies():
         response = requests.get(url)
         text = response.text.strip()
         lines = text.split("\n")
-        lines = [line.strip() for line in lines]
+        # 过滤掉非 IP 格式的行
+        lines = [line.strip() for line in lines if is_valid_proxy(line)]
         proxies.extend(lines)
         print(f"Loaded {len(lines)} proxies from {url}")
         for line in lines:
@@ -53,6 +54,14 @@ def generate_proxies():
     print(f"Total {len(proxies)} proxies loaded")
     random.shuffle(proxies)
     return proxies, proxy_url_infos
+
+def is_valid_proxy(proxy):
+    # 简单的 IP 格式验证
+    parts = proxy.split(':')
+    if len(parts) != 2:
+        return False
+    ip, port = parts
+    return ip.count('.') == 3 and port.isdigit()
 
 class ProxyCheckerConfig:
     def __init__(self):
@@ -121,6 +130,10 @@ async def check_proxy_async(proxy_url, proxy_url_infos, session, config):
     return None
 
 def update_proxy_file(filename, available_proxies):
+    # 确保文件内容被正确初始化
+    with open(filename, "w") as file:
+        for proxy in available_proxies:
+            file.write(proxy + "\n")
     try:
         with open(filename, "r") as file:
             existing_proxies = file.readlines()
@@ -189,7 +202,7 @@ def upload_file_to_github(filename):
     with open(FILENAME, 'rb') as file:
         content = file.read()
     data = {
-        'message': f'Update proxy list by scf',
+        'message': 'Update proxy list by airflow',
         'content': base64.b64encode(content).decode('utf-8'),
         'sha': get_file_sha(url, headers)
     }
