@@ -189,7 +189,7 @@ default_args = {
 
 # 定义DAG
 dag = DAG(
-    dag_id='运动地图的可用代理巡检',
+    dag_id='HTTPS可用代理巡检(ydmap)',
     default_args=default_args,
     description='A DAG to check and update HTTPS proxies',
     schedule_interval='*/30 * * * *',
