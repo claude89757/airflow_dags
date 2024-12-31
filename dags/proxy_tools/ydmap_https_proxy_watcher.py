@@ -13,13 +13,12 @@ import sys
 import time
 import random
 import base64
-import asyncio
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
+import subprocess
 
 # 第三方库导入
 import requests
-import aiohttp
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.models.variable import Variable
@@ -63,70 +62,35 @@ def is_valid_proxy(proxy):
     ip, port = parts
     return ip.count('.') == 3 and port.isdigit()
 
-class ProxyCheckerConfig:
-    def __init__(self):
-        self.initial_concurrency = 50
-        self.max_concurrency = 100
-        self.min_concurrency = 10
-        self.success_threshold = 0.3
-        self.check_interval = 60
-        self.current_concurrency = self.initial_concurrency
-        
-        self.total_checked = 0
-        self.success_count = 0
-        self.last_adjust_time = time.time()
-
-    def adjust_concurrency(self):
-        """动态调整并发数"""
-        current_time = time.time()
-        if current_time - self.last_adjust_time < self.check_interval:
-            return
-
-        if self.total_checked == 0:
-            return
-
-        success_rate = self.success_count / self.total_checked
-        
-        if success_rate > self.success_threshold:
-            self.current_concurrency = min(
-                self.current_concurrency + 10, 
-                self.max_concurrency
-            )
-        else:
-            self.current_concurrency = max(
-                self.current_concurrency - 5,
-                self.min_concurrency
-            )
-            
-        print(f"调整并发数到: {self.current_concurrency}, 成功率: {success_rate:.2%}")
-        self.last_adjust_time = current_time
-        self.total_checked = 0
-        self.success_count = 0
-
-async def check_proxy_async(proxy_url, proxy_url_infos, session, config):
-    """异步检查代理是否可用"""
+def check_proxy(proxy_url, proxy_url_infos):
+    """
+    使用 curl 命令检查代理是否可用
+    """
     try:
-        # print(f"正在检查 {proxy_url}")
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(f"{now} Checking {proxy_url}")
         target_url = 'https://wxsports.ydmap.cn/srv200/api/pub/basic/getConfig'
-        
-        async with session.get(
-            target_url,
-            proxy=f"http://{proxy_url}",
-            timeout=aiohttp.ClientTimeout(total=3)
-        ) as response:
-            response_text = await response.text()
-            
-            config.total_checked += 1
-            
-            if response.status == 200 and ("html" in response_text or "签名错误" in response_text):
-                print(f"[OK] {proxy_url} from {proxy_url_infos.get(proxy_url)}")
-                config.success_count += 1
-                return proxy_url
-                
+
+        curl_command = [
+            'curl',
+            '-x', f"http://{proxy_url}",
+            '--max-time', '3',
+            '-s',
+            '-o', '-',
+            '-w', '%{http_code}',
+            target_url
+        ]
+
+        result = subprocess.run(curl_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        response_text = result.stdout[:-3]  # 去掉状态码
+        http_code = result.stdout[-3:]  # 获取状态码
+
+        if http_code == '200' and ("html" in response_text or 
+                                 ('"code":-1' in response_text and "签名错误" in response_text)):
+            print(f"{now} [OK] {proxy_url} from {proxy_url_infos.get(proxy_url)}")
+            return proxy_url
     except Exception as error:
-        # print(f"代理 {proxy_url} 检查失败: {str(error)}")
-        pass
-    
+        print(str(error))
     return None
 
 def update_proxy_file(filename, available_proxies):
@@ -155,40 +119,26 @@ def update_proxy_file(filename, available_proxies):
         with open(filename, "w") as file:
             file.writelines(lines[200:])
 
-async def task_check_proxies_async():
-    config = ProxyCheckerConfig()
-    
+def task_check_proxies():
+    """
+    主要检查代理的任务函数
+    """
     download_file()
     
     proxies, proxy_url_infos = generate_proxies()
-    print(f"开始检查 {len(proxies)} 个代理")
+    print(f"start checking {len(proxies)} proxies")
     
     available_proxies = []
+    for proxy in proxies:
+        if check_proxy(proxy, proxy_url_infos):
+            available_proxies.append(proxy)
+            now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            print(f"{now} Available proxies: {len(available_proxies)}")
+            
+            update_proxy_file(FILENAME, available_proxies)
+            upload_file_to_github(FILENAME)
     
-    async with aiohttp.ClientSession() as session:
-        while proxies:
-            config.adjust_concurrency()
-            
-            batch_proxies = proxies[:config.current_concurrency]
-            proxies = proxies[config.current_concurrency:]
-            
-            tasks = [
-                check_proxy_async(proxy, proxy_url_infos, session, config)
-                for proxy in batch_proxies
-            ]
-            
-            results = await asyncio.gather(*tasks)
-            
-            valid_proxies = [p for p in results if p]
-            if valid_proxies:
-                available_proxies.extend(valid_proxies)
-                now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                print(f"{now} 可用代理数量: {len(available_proxies)}")
-                
-                update_proxy_file(FILENAME, available_proxies)
-                upload_file_to_github(FILENAME)
-
-    print("检查完成")
+    print("check end.")
 
 def upload_file_to_github(filename):
     token = Variable.get('GIT_TOKEN')
@@ -256,7 +206,7 @@ dag = DAG(
 
 def run_proxy_checker():
     """Airflow任务的入口点"""
-    asyncio.run(task_check_proxies_async())
+    task_check_proxies()
 
 # 创建任务
 check_proxies_task = PythonOperator(
