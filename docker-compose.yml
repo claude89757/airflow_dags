@@ -64,6 +64,7 @@ services:
     volumes:
       - /root/airflow_dags:/opt/bitnami/airflow/dags
       - /root/airflow_logs:/opt/bitnami/airflow/logs
+      - /root/airflow_dags/requirements.txt:/bitnami/python/requirements.txt
 
   # -------------------------
   # 4) Airflow Celery Worker
@@ -100,6 +101,7 @@ services:
     volumes:
       - /root/airflow_dags:/opt/bitnami/airflow/dags
       - /root/airflow_logs:/opt/bitnami/airflow/logs
+      - /root/airflow_dags/requirements.txt:/bitnami/python/requirements.txt
 
   # -------------------------
   # 5) Airflow Webserver
@@ -166,3 +168,4 @@ services:
     volumes:
       - /root/airflow_dags:/opt/bitnami/airflow/dags
       - /root/airflow_logs:/opt/bitnami/airflow/logs
+      - /root/airflow_dags/requirements.txt:/bitnami/python/requirements.txt
