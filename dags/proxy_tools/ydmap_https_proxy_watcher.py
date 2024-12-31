@@ -12,12 +12,15 @@ import os
 import random
 import base64
 from datetime import datetime, timedelta
-import subprocess
 
 # 第三方库导入
 import requests
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.models.variable import Variable  # 需要保留这个导入，因为用于获取 GIT_TOKEN
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # 常量定义
 FILENAME = "/tmp/isz_https_proxies.txt"
@@ -60,33 +63,35 @@ def is_valid_proxy(proxy):
 
 def check_proxy(proxy_url, proxy_url_infos):
     """
-    使用 curl 命令检查代理是否可用
+    使用 requests 检查代理是否可用
     """
     try:
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         print(f"{now} Checking {proxy_url}")
         target_url = 'https://wxsports.ydmap.cn/srv200/api/pub/basic/getConfig'
-
-        curl_command = [
-            'curl',
-            '-x', f"http://{proxy_url}",
-            '--max-time', '3',
-            '-s',
-            '-o', '-',
-            '-w', '%{http_code}',
-            target_url
-        ]
-
-        result = subprocess.run(curl_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        response_text = result.stdout[:-3]  # 去掉状态码
-        http_code = result.stdout[-3:]  # 获取状态码
-
-        if http_code == '200' and ("html" in response_text or 
-                                 ('"code":-1' in response_text and "签名错误" in response_text)):
+        
+        proxies = {
+            'http': f'http://{proxy_url}',
+            'https': f'http://{proxy_url}'
+        }
+        
+        response = requests.get(
+            target_url,
+            proxies=proxies,
+            timeout=3,
+            verify=False  # 忽略 SSL 验证
+        )
+        
+        response_text = response.text
+        
+        if response.status_code == 200 and ("html" in response_text or 
+            ('"code":-1' in response_text and "签名错误" in response_text)):
             print(f"{now} [OK] {proxy_url} from {proxy_url_infos.get(proxy_url)}")
             return proxy_url
+            
     except Exception as error:
-        print(str(error))
+        # print(str(error))
+        pass
     return None
 
 def update_proxy_file(filename, available_proxies):
