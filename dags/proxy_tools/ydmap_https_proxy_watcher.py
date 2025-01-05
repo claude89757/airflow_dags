@@ -199,7 +199,7 @@ dag = DAG(
     schedule_interval='*/30 * * * *',
     start_date=datetime(2024, 1, 1),
     max_active_runs=1,
-    dagrun_timeout=timedelta(minutes=30),
+    dagrun_timeout=timedelta(minutes=360),
     catchup=False,
     tags=['proxy', 'ydmap'],
 )
