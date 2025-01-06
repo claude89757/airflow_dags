@@ -930,7 +930,7 @@ def check_tennis_courts():
                      notifications.append(notification)
 
         # 只保留最新的10条消息
-        notifications = notifications[10:]
+        notifications = notifications[-10:]
         
         # 更新Variable
         description = f"上海青少体育网球场场地通知 - 最后更新: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
