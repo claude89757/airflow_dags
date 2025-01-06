@@ -901,13 +901,14 @@ def check_tennis_courts():
             continue
 
     # 处理通知逻辑
+    # 获取现有的通知缓存
+    cache_key = "上海青少体育网球场"
+    try:
+        notifications = Variable.get(cache_key, deserialize_json=True)
+    except:
+        notifications = []
     if up_for_send_data_list:
-        # 获取现有的通知缓存
-        cache_key = "上海青少体育网球场"
-        try:
-            notifications = Variable.get(cache_key, deserialize_json=True)
-        except:
-            notifications = []
+
         
         # 添加新的通知
         for data in up_for_send_data_list:
@@ -940,6 +941,8 @@ def check_tennis_courts():
             serialize_json=True
         )
 
+    print(f"up_for_send_data_list: {up_for_send_data_list}")
+    print(f"notifications: {notifications}")
     run_end_time = time.time()
     execution_time = run_end_time - run_start_time
     print_with_timestamp(f"Total cost time：{execution_time} s")
