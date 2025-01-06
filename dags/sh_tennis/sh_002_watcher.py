@@ -926,10 +926,31 @@ def check_tennis_courts():
                 
                 # 如果不存在，则添加到列表开头
                 if notification not in notifications:
-                    notifications.insert(0, notification)
+                     notifications.append(notification)
+
+        # 剔除过期日期和时间的通知
+        current_datetime = datetime.datetime.now()
+        valid_notifications = []
+        
+        for notification in notifications:
+            # 从通知中提取日期
+            date_str = notification[notification.find('(')+1:notification.find(')')]
+            # 从通知中提取时间
+            time_range = notification.split('空场: ')[1]
+            start_time = time_range.split('-')[0]
+            
+            # 构建完整的日期时间
+            notification_datetime = datetime.datetime.strptime(
+                f"{current_datetime.year}-{date_str} {start_time}",
+                "%Y-%m-%d %H:%M"
+            )
+            
+            # 只保留未过期的通知
+            if notification_datetime > current_datetime:
+                valid_notifications.append(notification)
 
         # 只保留最新的10条消息
-        notifications = notifications[:10]
+        notifications = notifications[10:]
         
         # 更新Variable
         description = f"上海青少体育网球场场地通知 - 最后更新: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
